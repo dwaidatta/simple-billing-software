@@ -1,0 +1,739 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Billing Software</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+    background: #f2f2f2;
+    margin: 0;
+    padding: 20px;
+    color: #1a1a1a;
+  }
+  h1.app-title {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    color: #1a1a1a;
+  }
+  .subtitle {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: #555;
+  }
+  .container {
+    display: flex;
+    gap: 20px;
+    max-width: 1300px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+  }
+  .panel {
+    background: #ffffff;
+    border: 1px solid #ccc;
+    padding: 16px;
+  }
+  #controls-panel { flex: 1 1 400px; min-width: 360px; }
+  #bill-panel { flex: 2 1 520px; min-width: 420px; }
+
+  fieldset {
+    border: 1px solid #ccc;
+    margin-bottom: 14px;
+    padding: 10px 12px 12px;
+  }
+  legend {
+    font-weight: 600;
+    padding: 0 6px;
+    font-size: 13px;
+    color: #1a1a1a;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  label {
+    display: block;
+    margin-top: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #333;
+  }
+  input[type=text], input[type=number], input[type=date], select, textarea {
+    width: 100%;
+    padding: 6px 8px;
+    margin-top: 3px;
+    border: 1px solid #b3b3b3;
+    background: #fff;
+    font-family: inherit;
+    font-size: 13px;
+    border-radius: 2px;
+  }
+  input[type=text]:focus, input[type=number]:focus, input[type=date]:focus, textarea:focus {
+    outline: none;
+    border-color: #555;
+  }
+  input[type=file] {
+    margin-top: 5px;
+    font-size: 12px;
+  }
+  .row2 { display: flex; gap: 8px; }
+  .row2 > div { flex: 1; }
+
+  button {
+    font-family: inherit;
+    background: #2b2b2b;
+    color: #fff;
+    border: 1px solid #2b2b2b;
+    padding: 7px 14px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12.5px;
+    margin-top: 8px;
+    margin-right: 6px;
+    border-radius: 2px;
+  }
+  button:hover { background: #050505; }
+  button.secondary {
+    background: #fff;
+    color: #2b2b2b;
+    border: 1px solid #999;
+  }
+  button.secondary:hover { background: #eee; }
+  button.danger {
+    background: #fff;
+    color: #7a1f1f;
+    border: 1px solid #7a1f1f;
+  }
+  button.danger:hover { background: #f7eaea; }
+
+  /* ===== EDITABLE ITEM TABLE ===== */
+  table.entry-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    margin-top: 6px;
+  }
+  table.entry-table th {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    border-bottom: 1px solid #999;
+    padding: 5px 4px;
+    color: #444;
+  }
+  table.entry-table td {
+    padding: 3px 3px;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+  }
+  table.entry-table td input {
+    width: 100%;
+    border: 1px solid #ccc;
+    padding: 4px 5px;
+    font-size: 12.5px;
+    font-family: inherit;
+    border-radius: 2px;
+  }
+  table.entry-table td input:focus {
+    outline: none;
+    border-color: #555;
+  }
+  table.entry-table td.num-col input { text-align: right; }
+  table.entry-table td.amt-col {
+    text-align: right;
+    font-weight: 600;
+    white-space: nowrap;
+    padding-right: 4px;
+  }
+  table.entry-table .col-del { width: 26px; text-align: center; }
+  .del-row-btn {
+    background: none;
+    border: none;
+    color: #7a1f1f;
+    font-size: 15px;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    line-height: 1;
+  }
+  .del-row-btn:hover { color: #400; }
+  .add-row-btn {
+    margin-top: 8px;
+    font-size: 12px;
+  }
+
+  table.entry-table.charges-table td.name-col input { width: 100%; }
+
+  /* ===== BILL / RECEIPT STYLE ===== */
+  #bill {
+    background: #ffffff;
+    border: 1px solid #999;
+    padding: 28px;
+    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+    color: #111;
+  }
+  .bill-header {
+    text-align: center;
+    border-bottom: 2px solid #1a1a1a;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+  .bill-header h2 {
+    margin: 0 0 4px 0;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .bill-header .store-sub {
+    font-size: 12px;
+    margin: 2px 0;
+    color: #444;
+    white-space: pre-line;
+  }
+  .bill-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .bill-meta div { line-height: 1.6; }
+  .bill-meta b { display: inline-block; min-width: 80px; color: #333; }
+
+  table.items {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 13px;
+  }
+  table.items th, table.items td {
+    border-bottom: 1px solid #ddd;
+    padding: 6px 4px;
+    text-align: left;
+  }
+  table.items th {
+    border-bottom: 2px solid #1a1a1a;
+    border-top: 2px solid #1a1a1a;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.4px;
+    color: #333;
+  }
+  table.items td.num, table.items th.num { text-align: right; }
+
+  .charges-list { font-size: 13px; margin: 6px 0; }
+  .charges-list div { display: flex; justify-content: space-between; padding: 2px 0; }
+  .charges-list .label { color: #444; }
+
+  .totals-box {
+    margin-top: 8px;
+    border-top: 2px solid #1a1a1a;
+    padding-top: 8px;
+  }
+  .totals-box div {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    font-size: 14px;
+  }
+  .totals-box .grand {
+    font-size: 18px;
+    font-weight: 700;
+    border-top: 1px solid #999;
+    margin-top: 6px;
+    padding-top: 8px;
+  }
+
+  .bill-footer {
+    text-align: center;
+    margin-top: 20px;
+    border-top: 1px solid #ccc;
+    padding-top: 12px;
+    font-size: 12.5px;
+    color: #333;
+  }
+  .bill-footer .thanks {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .qr-area {
+    text-align: center;
+    margin-top: 16px;
+  }
+  .qr-area img {
+    max-width: 130px;
+    max-height: 130px;
+    border: 1px solid #999;
+    padding: 4px;
+    background: #fff;
+  }
+  .qr-area .qr-label { font-size: 11px; margin-top: 4px; color: #444; }
+
+  .stamp {
+    position: absolute;
+    top: 40px;
+    right: 40px;
+    border: 2px solid #1a1a1a;
+    color: #1a1a1a;
+    padding: 4px 12px;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 2px;
+    display: none;
+  }
+  #bill { position: relative; }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    #controls-panel, .no-print { display: none !important; }
+    .container { display: block; max-width: 100%; }
+    #bill-panel { border: none; padding: 0; }
+    #bill { border: none; padding: 10px; }
+  }
+
+  .helper-note {
+    font-size: 11px;
+    color: #666;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ============ CONTROLS PANEL ============ -->
+  <div class="panel no-print" id="controls-panel">
+
+    <fieldset>
+      <legend>Store Details</legend>
+      <label>Store Name</label>
+      <input type="text" id="storeName" value="THE OLD CORNER STORE">
+      <label>Store Address / Tagline (multi-line ok)</label>
+      <textarea id="storeAddress" rows="2">123 Market Street, Bhatpara, West Bengal
+Ph: +91-00000-00000</textarea>
+      <label>GSTIN / Reg No. (optional)</label>
+      <input type="text" id="storeGst" placeholder="e.g. 19ABCDE1234F1Z5">
+      <label>Upload QR Image (from your computer)</label>
+      <input type="file" id="qrInput" accept="image/*">
+      <div class="helper-note">Used for UPI / payment QR at bottom of bill. Stays local to your browser.</div>
+      <button type="button" class="secondary" onclick="clearQr()">Remove QR</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Bill Info</legend>
+      <div class="row2">
+        <div>
+          <label>Bill No.</label>
+          <input type="text" id="billNo" value="1">
+        </div>
+        <div>
+          <label>Date</label>
+          <input type="date" id="billDate">
+        </div>
+      </div>
+      <label>Billed To (Customer Name)</label>
+      <input type="text" id="billedTo" placeholder="Customer name">
+      <label>Customer Address / Phone (optional)</label>
+      <textarea id="custAddress" rows="2" placeholder="Address / phone number"></textarea>
+    </fieldset>
+
+    <fieldset>
+      <legend>Items</legend>
+      <table class="entry-table" id="itemsTable">
+        <thead>
+          <tr>
+            <th style="width:38%;">Item</th>
+            <th style="width:16%;">Qty</th>
+            <th style="width:20%;">Price</th>
+            <th style="width:18%;">Amount</th>
+            <th class="col-del"></th>
+          </tr>
+        </thead>
+        <tbody id="itemsTableBody"></tbody>
+      </table>
+      <button type="button" class="secondary add-row-btn" onclick="addItemRow()">Add Item Row</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Special Charges (rain fee, surge fee, high demand fee, etc.)</legend>
+      <table class="entry-table charges-table" id="chargesTable">
+        <thead>
+          <tr>
+            <th style="width:65%;">Charge Name</th>
+            <th style="width:30%;">Amount</th>
+            <th class="col-del"></th>
+          </tr>
+        </thead>
+        <tbody id="chargesTableBody"></tbody>
+      </table>
+      <button type="button" class="secondary add-row-btn" onclick="addChargeRow()">Add Charge Row</button>
+      <div class="helper-note">Use a negative amount for a discount-style line.</div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Tax &amp; Discount</legend>
+      <div class="row2">
+        <div>
+          <label>Tax (%)</label>
+          <input type="number" id="taxPercent" value="0" step="0.01">
+        </div>
+        <div>
+          <label>Flat Discount</label>
+          <input type="number" id="flatDiscount" value="0" step="0.01">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Footer Note</legend>
+      <textarea id="footerNote" rows="2">Thank you for your business. Goods once sold will not be taken back.</textarea>
+      <label style="display:flex; align-items:center; gap:6px; margin-top:10px; font-weight:normal;">
+        <input type="checkbox" id="paidStamp" style="width:auto;" onchange="updateBill()"> Mark bill as PAID (stamp)
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Actions</legend>
+      <button type="button" onclick="updateBill()">Refresh Preview</button>
+      <button type="button" onclick="downloadPdf()">Print / Save as PDF</button>
+      <button type="button" class="danger" onclick="resetAll()">Clear Everything (manual reset)</button>
+      <div class="helper-note">The form does not auto-reset after printing. Clear manually only when needed.</div>
+    </fieldset>
+
+  </div>
+
+  <!-- ============ BILL PREVIEW PANEL ============ -->
+  <div class="panel" id="bill-panel">
+    <div id="bill">
+      <div class="stamp" id="paidStampEl">PAID</div>
+      <div class="bill-header">
+        <h2 id="pv-storeName">THE OLD CORNER STORE</h2>
+        <div class="store-sub" id="pv-storeAddress">123 Market Street, Bhatpara, West Bengal
+Ph: +91-00000-00000</div>
+        <div class="store-sub" id="pv-storeGst"></div>
+      </div>
+
+      <div class="bill-meta">
+        <div>
+          <div><b>Bill No:</b> <span id="pv-billNo">1</span></div>
+          <div><b>Date:</b> <span id="pv-billDate">-</span></div>
+        </div>
+        <div>
+          <div><b>Billed To:</b> <span id="pv-billedTo">-</span></div>
+          <div id="pv-custAddress" style="white-space:pre-line;"></div>
+        </div>
+      </div>
+
+      <table class="items">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Item</th>
+            <th class="num">Qty</th>
+            <th class="num">Rate</th>
+            <th class="num">Amount</th>
+          </tr>
+        </thead>
+        <tbody id="pv-itemsBody">
+          <tr><td colspan="5" style="text-align:center; color:#888;">No items yet</td></tr>
+        </tbody>
+      </table>
+
+      <div class="charges-list" id="pv-chargesList"></div>
+
+      <div class="totals-box">
+        <div><span>Subtotal</span><span id="pv-subtotal">0.00</span></div>
+        <div id="pv-chargesTotalRow" style="display:none;"><span>Special Charges Total</span><span id="pv-chargesTotal">0.00</span></div>
+        <div id="pv-taxRow" style="display:none;"><span>Tax (<span id="pv-taxPct">0</span>%)</span><span id="pv-taxAmt">0.00</span></div>
+        <div id="pv-discRow" style="display:none;"><span>Discount</span><span id="pv-discAmt">-0.00</span></div>
+        <div class="grand"><span>Grand Total</span><span id="pv-grandTotal">0.00</span></div>
+      </div>
+
+      <div class="qr-area" id="pv-qrArea" style="display:none;">
+        <img id="pv-qrImg" src="" alt="QR Code">
+        <div class="qr-label">Scan to Pay</div>
+      </div>
+
+      <div class="bill-footer">
+        <div class="thanks">Thank You</div>
+        <div id="pv-footerNote">Thank you for your business.</div>
+        <div style="margin-top:8px; font-size:11px; color:#777;">Computer generated bill</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let items = [];
+let charges = [];
+let qrDataUrl = null;
+let itemIdCounter = 0;
+let chargeIdCounter = 0;
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+document.getElementById("billDate").value = todayStr();
+
+function fmtNum(n) {
+  n = isNaN(n) ? 0 : n;
+  return n.toLocaleString("en-IN", {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str == null ? "" : str;
+  return div.innerHTML;
+}
+
+/* ===== ITEM TABLE (editable rows) ===== */
+function addItemRow(name = "", qty = 1, price = 0) {
+  const id = itemIdCounter++;
+  items.push({id, name, qty, price});
+  renderItemsTable();
+  updateBill();
+}
+
+function removeItemRow(id) {
+  items = items.filter(it => it.id !== id);
+  renderItemsTable();
+  updateBill();
+}
+
+function updateItemField(id, field, value) {
+  const it = items.find(i => i.id === id);
+  if (!it) return;
+  if (field === "name") it.name = value;
+  else it[field] = parseFloat(value) || 0;
+  renderItemsTable(id, field);
+  updateBill();
+}
+
+function renderItemsTable(focusId = null, focusField = null) {
+  const tbody = document.getElementById("itemsTableBody");
+  tbody.innerHTML = items.map(it => `
+    <tr>
+      <td><input type="text" value="${escapeHtml(it.name)}" oninput="updateItemField(${it.id},'name',this.value)" placeholder="Item name"></td>
+      <td class="num-col"><input type="number" step="0.01" value="${it.qty}" oninput="updateItemField(${it.id},'qty',this.value)"></td>
+      <td class="num-col"><input type="number" step="0.01" value="${it.price}" oninput="updateItemField(${it.id},'price',this.value)"></td>
+      <td class="amt-col">${fmtNum(it.qty*it.price)}</td>
+      <td class="col-del"><button type="button" class="del-row-btn" onclick="removeItemRow(${it.id})" title="Remove row">&times;</button></td>
+    </tr>
+  `).join("");
+  if (focusId !== null && focusField !== null) {
+    const rowIndex = items.findIndex(i => i.id === focusId);
+    if (rowIndex >= 0) {
+      const colIndex = focusField === "name" ? 0 : (focusField === "qty" ? 1 : 2);
+      const input = tbody.rows[rowIndex]?.cells[colIndex]?.querySelector("input");
+      if (input) {
+        input.focus();
+        const val = input.value;
+        input.value = "";
+        input.value = val;
+      }
+    }
+  }
+}
+
+/* ===== CHARGES TABLE (editable rows) ===== */
+function addChargeRow(name = "", amount = 0) {
+  const id = chargeIdCounter++;
+  charges.push({id, name, amount});
+  renderChargesTable();
+  updateBill();
+}
+
+function removeChargeRow(id) {
+  charges = charges.filter(c => c.id !== id);
+  renderChargesTable();
+  updateBill();
+}
+
+function updateChargeField(id, field, value) {
+  const c = charges.find(ch => ch.id === id);
+  if (!c) return;
+  if (field === "name") c.name = value;
+  else c.amount = parseFloat(value) || 0;
+  updateBill();
+}
+
+function renderChargesTable() {
+  const tbody = document.getElementById("chargesTableBody");
+  tbody.innerHTML = charges.map(c => `
+    <tr>
+      <td class="name-col"><input type="text" value="${escapeHtml(c.name)}" oninput="updateChargeField(${c.id},'name',this.value)" placeholder="e.g. Rain Fee, Surge Fee"></td>
+      <td class="num-col"><input type="number" step="0.01" value="${c.amount}" oninput="updateChargeField(${c.id},'amount',this.value)"></td>
+      <td class="col-del"><button type="button" class="del-row-btn" onclick="removeChargeRow(${c.id})" title="Remove row">&times;</button></td>
+    </tr>
+  `).join("");
+}
+
+document.getElementById("qrInput").addEventListener("change", function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    qrDataUrl = evt.target.result;
+    updateBill();
+  };
+  reader.readAsDataURL(file);
+});
+
+function clearQr() {
+  qrDataUrl = null;
+  document.getElementById("qrInput").value = "";
+  updateBill();
+}
+
+function updateBill() {
+  document.getElementById("pv-storeName").textContent = document.getElementById("storeName").value || "STORE NAME";
+  document.getElementById("pv-storeAddress").textContent = document.getElementById("storeAddress").value;
+  const gst = document.getElementById("storeGst").value.trim();
+  document.getElementById("pv-storeGst").textContent = gst ? ("GSTIN: " + gst) : "";
+
+  document.getElementById("pv-billNo").textContent = document.getElementById("billNo").value || "-";
+  const dateVal = document.getElementById("billDate").value;
+  document.getElementById("pv-billDate").textContent = dateVal ? formatDate(dateVal) : "-";
+  document.getElementById("pv-billedTo").textContent = document.getElementById("billedTo").value || "-";
+  document.getElementById("pv-custAddress").textContent = document.getElementById("custAddress").value;
+
+  const validItems = items.filter(it => it.name.trim() !== "" || it.qty !== 0 || it.price !== 0);
+  const tbody = document.getElementById("pv-itemsBody");
+  if (validItems.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#888;">No items yet</td></tr>';
+  } else {
+    tbody.innerHTML = validItems.map((it, i) => `
+      <tr>
+        <td>${i+1}</td>
+        <td>${escapeHtml(it.name) || "-"}</td>
+        <td class="num">${it.qty}</td>
+        <td class="num">${fmtNum(it.price)}</td>
+        <td class="num">${fmtNum(it.qty*it.price)}</td>
+      </tr>
+    `).join("");
+  }
+
+  const subtotal = items.reduce((s, it) => s + it.qty*it.price, 0);
+  const validCharges = charges.filter(c => c.name.trim() !== "" || c.amount !== 0);
+  const chargesTotal = charges.reduce((s, c) => s + c.amount, 0);
+
+  const chargesListEl = document.getElementById("pv-chargesList");
+  if (validCharges.length === 0) {
+    chargesListEl.innerHTML = "";
+  } else {
+    chargesListEl.innerHTML = validCharges.map(c => `
+      <div><span class="label">${escapeHtml(c.name) || "Charge"}</span><span>${c.amount < 0 ? "-" : ""}${fmtNum(Math.abs(c.amount))}</span></div>
+    `).join("");
+  }
+
+  const taxPct = parseFloat(document.getElementById("taxPercent").value) || 0;
+  const flatDiscount = parseFloat(document.getElementById("flatDiscount").value) || 0;
+  const taxableBase = subtotal + chargesTotal;
+  const taxAmt = taxableBase * (taxPct/100);
+  const grandTotal = taxableBase + taxAmt - flatDiscount;
+
+  document.getElementById("pv-subtotal").textContent = fmtNum(subtotal);
+
+  const chgRow = document.getElementById("pv-chargesTotalRow");
+  if (validCharges.length > 0) {
+    chgRow.style.display = "flex";
+    document.getElementById("pv-chargesTotal").textContent = fmtNum(chargesTotal);
+  } else {
+    chgRow.style.display = "none";
+  }
+
+  const taxRow = document.getElementById("pv-taxRow");
+  if (taxPct > 0) {
+    taxRow.style.display = "flex";
+    document.getElementById("pv-taxPct").textContent = taxPct;
+    document.getElementById("pv-taxAmt").textContent = fmtNum(taxAmt);
+  } else {
+    taxRow.style.display = "none";
+  }
+
+  const discRow = document.getElementById("pv-discRow");
+  if (flatDiscount > 0) {
+    discRow.style.display = "flex";
+    document.getElementById("pv-discAmt").textContent = "-" + fmtNum(flatDiscount);
+  } else {
+    discRow.style.display = "none";
+  }
+
+  document.getElementById("pv-grandTotal").textContent = fmtNum(grandTotal);
+
+  const qrArea = document.getElementById("pv-qrArea");
+  if (qrDataUrl) {
+    qrArea.style.display = "block";
+    document.getElementById("pv-qrImg").src = qrDataUrl;
+  } else {
+    qrArea.style.display = "none";
+  }
+
+  document.getElementById("pv-footerNote").textContent = document.getElementById("footerNote").value;
+
+  document.getElementById("paidStampEl").style.display = document.getElementById("paidStamp").checked ? "block" : "none";
+}
+
+function formatDate(iso) {
+  const parts = iso.split("-");
+  if (parts.length !== 3) return iso;
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${parseInt(parts[2])} ${months[parseInt(parts[1])-1]} ${parts[0]}`;
+}
+
+function sanitizeFilename(str) {
+  return (str || "").replace(/[^a-z0-9\-_]+/gi, "_").replace(/^_+|_+$/g, "");
+}
+
+function downloadPdf() {
+  const storeName = sanitizeFilename(document.getElementById("storeName").value) || "Store";
+  const billNo = sanitizeFilename(document.getElementById("billNo").value) || "0";
+  const dateVal = document.getElementById("billDate").value || todayStr();
+  const custName = sanitizeFilename(document.getElementById("billedTo").value) || "Customer";
+  const fileTitle = `Bill_${storeName}_${billNo}_${dateVal}_${custName}`;
+  const originalTitle = document.title;
+  document.title = fileTitle;
+  window.print();
+  setTimeout(() => { document.title = originalTitle; }, 1000);
+}
+
+function resetAll() {
+  if (!confirm("Clear ALL fields, items, and charges? This cannot be undone.")) return;
+  items = [];
+  charges = [];
+  qrDataUrl = null;
+  document.getElementById("qrInput").value = "";
+  document.getElementById("billedTo").value = "";
+  document.getElementById("custAddress").value = "";
+  document.getElementById("billNo").value = "1";
+  document.getElementById("billDate").value = todayStr();
+  document.getElementById("taxPercent").value = "0";
+  document.getElementById("flatDiscount").value = "0";
+  document.getElementById("paidStamp").checked = false;
+  renderItemsTable();
+  renderChargesTable();
+  updateBill();
+}
+
+/* Seed with a couple of blank rows to start */
+addItemRow();
+addChargeRow();
+updateBill();
+
+window.onbeforeprint = updateBill;
+</script>
+
+</body>
+</html>
